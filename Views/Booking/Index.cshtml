@@ -217,6 +217,10 @@
                         const bookingDateInput = document.getElementById('bookingDate');
                         const bookingTimeInput = document.getElementById('bookingTime');
 
+                        // Global state: total duration of selected services & fetched slots
+                        let currentTotalMinutes = 0;
+                        let cachedSlots = [];
+
                         // Pagination & Search Logic for Services
                         const serviceCards = Array.from(document.querySelectorAll('.service-card'));
                         const serviceSearch = document.getElementById('serviceSearch');
@@ -308,6 +312,14 @@
                             totalPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + 'đ';
                             totalTimeEl.textContent = `/ ${minutes} phút`;
                             selectedTextEl.textContent = count > 0 ? `${count} dịch vụ đã chọn (${names.join(', ')})` : 'Chưa chọn dịch vụ nào';
+
+                            // Re-render time slots if duration changed & a date is already chosen
+                            if (minutes !== currentTotalMinutes) {
+                                currentTotalMinutes = minutes;
+                                if (bookingDateInput.value && cachedSlots.length > 0) {
+                                    renderTimeSlots(cachedSlots);
+                                }
+                            }
 
                             validateForm();
                         }
@@ -403,51 +415,106 @@
 
                         renderCalendar();
 
-                        // Logic for Time Slots (Mocking API call)
+                        // Logic for Time Slots
                         async function loadTimeSlots(dateStr) {
-                            timeSlotsContainer.innerHTML = '<div class="text-sm font-bold text-slate-400 animate-pulse">Đang tải giờ trống...</div>';
+                            timeSlotsContainer.innerHTML = '<div class="text-sm font-bold text-base-content/40 animate-pulse">Đang tải giờ trống...</div>';
+                            cachedSlots = [];
                 
                             try {
                                 const response = await fetch(`/api/bookings/available-slots?date=${dateStr}`);
                                 const slots = await response.json();
-                    
-                                timeSlotsContainer.innerHTML = '';
-                    
-                                if (slots.length === 0) {
-                                    timeSlotsContainer.innerHTML = '<div class="text-sm text-red-500 font-medium bg-red-50 p-3 rounded-lg w-full text-center">Rất tiếc, ngày này đã kín lịch. Vui lòng chọn ngày khác.</div>';
-                                    return;
-                                }
-
-                                slots.forEach(slot => {
-                                    const btn = document.createElement('button');
-                                    btn.type = 'button';
-                                    btn.className = `px-5 py-2.5 rounded-xl border text-sm font-bold transition-all ${slot.isAvailable ?
-                                        'bg-base-100 border-base-content/10 text-base-content hover:border-primary hover:text-primary hover:shadow-lg hover:-translate-y-0.5' :
-                                        'bg-base-200 border-transparent text-base-content/20 cursor-not-allowed opacity-50'
-                                        }`;
-                                    btn.textContent = slot.time;
-                        
-                                    if (slot.isAvailable) {
-                                        btn.addEventListener('click', () => {
-                                            // Deselect others
-                                            document.querySelectorAll('.selected-time').forEach(el => {
-                                                el.classList.remove('selected-time', 'bg-primary', 'text-background-dark', 'border-primary', 'shadow-primary/30', 'shadow-xl');
-                                                el.classList.add('bg-white', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
-                                            });
-                                            // Select current
-                                            btn.classList.remove('bg-white', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
-                                            btn.classList.add('selected-time', 'bg-primary', 'text-background-dark', 'border-primary', 'shadow-primary/30', 'shadow-xl');
-                                
-                                            bookingTimeInput.value = slot.time;
-                                            validateForm();
-                                        });
-                                    }
-                        
-                                    timeSlotsContainer.appendChild(btn);
-                                });
+                                cachedSlots = slots;
+                                renderTimeSlots(slots);
                             } catch (error) {
                                 console.error('Error fetching slots', error);
                                 timeSlotsContainer.innerHTML = '<div class="text-sm text-red-500 font-medium">Lỗi kết nối. Vui lòng thử lại.</div>';
+                            }
+                        }
+
+                        // Render time slots, taking into account total service duration
+                        function renderTimeSlots(slots) {
+                            timeSlotsContainer.innerHTML = '';
+
+                            if (!slots || slots.length === 0) {
+                                timeSlotsContainer.innerHTML = '<div class="text-sm text-red-500 font-medium bg-red-50 p-3 rounded-lg w-full text-center">Rất tiếc, ngày này đã kín lịch. Vui lòng chọn ngày khác.</div>';
+                                return;
+                            }
+
+                            // How many consecutive 30-min slots are needed?
+                            const requiredSlots = currentTotalMinutes > 0 ? Math.ceil(currentTotalMinutes / 30) : 1;
+
+                            // Check if currently-selected time is still valid after re-render
+                            let selectedTimeStillValid = false;
+
+                            slots.forEach((slot, index) => {
+                                // Determine if this slot has enough consecutive free slots for the service duration
+                                let hasEnoughRoom = false;
+                                if (slot.isAvailable) {
+                                    // All `requiredSlots` consecutive slots starting from `index` must be available
+                                    hasEnoughRoom = true;
+                                    for (let k = 0; k < requiredSlots; k++) {
+                                        const nextSlot = slots[index + k];
+                                        if (!nextSlot || !nextSlot.isAvailable) {
+                                            hasEnoughRoom = false;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                const isEffectivelyAvailable = hasEnoughRoom;
+                                const isCurrentlySelected = bookingTimeInput.value === slot.time;
+
+                                if (isCurrentlySelected && isEffectivelyAvailable) {
+                                    selectedTimeStillValid = true;
+                                }
+
+                                const btn = document.createElement('button');
+                                btn.type = 'button';
+
+                                if (isCurrentlySelected && isEffectivelyAvailable) {
+                                    btn.className = 'selected-time px-5 py-2.5 rounded-xl border text-sm font-bold transition-all bg-primary text-primary-content border-primary shadow-primary/30 shadow-xl';
+                                } else if (isEffectivelyAvailable) {
+                                    btn.className = 'px-5 py-2.5 rounded-xl border text-sm font-bold transition-all bg-base-100 border-base-content/10 text-base-content hover:border-primary hover:text-primary hover:shadow-lg hover:-translate-y-0.5';
+                                } else {
+                                    btn.className = 'px-5 py-2.5 rounded-xl border text-sm font-bold transition-all bg-base-200 border-transparent text-base-content/20 cursor-not-allowed opacity-50';
+                                }
+
+                                btn.textContent = slot.time;
+
+                                // Tooltip hint when not enough room
+                                if (slot.isAvailable && !hasEnoughRoom && currentTotalMinutes > 0) {
+                                    btn.title = `Không đủ thời gian cho ${currentTotalMinutes} phút dịch vụ từ giờ này`;
+                                }
+
+                                if (isEffectivelyAvailable) {
+                                    btn.addEventListener('click', () => {
+                                        // Deselect others
+                                        document.querySelectorAll('.selected-time').forEach(el => {
+                                            el.classList.remove('selected-time', 'bg-primary', 'text-primary-content', 'border-primary', 'shadow-primary/30', 'shadow-xl');
+                                            el.classList.add('bg-base-100', 'border-base-content/10', 'text-base-content', 'hover:border-primary', 'hover:text-primary', 'hover:shadow-lg', 'hover:-translate-y-0.5');
+                                        });
+                                        // Select current
+                                        btn.classList.remove('bg-base-100', 'border-base-content/10', 'text-base-content', 'hover:border-primary', 'hover:text-primary', 'hover:shadow-lg', 'hover:-translate-y-0.5');
+                                        btn.classList.add('selected-time', 'bg-primary', 'text-primary-content', 'border-primary', 'shadow-primary/30', 'shadow-xl');
+                            
+                                        bookingTimeInput.value = slot.time;
+                                        validateForm();
+                                    });
+                                }
+                    
+                                timeSlotsContainer.appendChild(btn);
+                            });
+
+                            // If the previously selected time is no longer valid, clear it
+                            if (bookingTimeInput.value && !selectedTimeStillValid) {
+                                bookingTimeInput.value = '';
+                                validateForm();
+
+                                // Show a small warning
+                                const warning = document.createElement('p');
+                                warning.className = 'w-full mt-3 text-xs text-warning font-semibold';
+                                warning.textContent = '⚠ Giờ đã chọn không còn phù hợp với tổng thời gian dịch vụ. Vui lòng chọn lại giờ.';
+                                timeSlotsContainer.appendChild(warning);
                             }
                         }
                     });
