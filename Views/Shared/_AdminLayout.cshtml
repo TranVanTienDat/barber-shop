@@ -1,0 +1,123 @@
+@{
+    Layout = "_BaseLayout";
+    ViewData["BodyClass"] = ""; // Admin layout doesn't use flex flex-col on body
+}
+
+@section Styles {
+    <script type="module" src="https://unpkg.com/cally"></script>
+}
+
+<div class="flex h-screen overflow-hidden">
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 flex flex-col border-r border-base-200 bg-base-100">
+        <div class="p-6 flex items-center gap-3">
+            <div class="bg-primary p-2 rounded-lg">
+                <span class="material-symbols-outlined text-primary-content">grid_view</span>
+            </div>
+            <h1 class="text-xl font-bold tracking-tight">AdminPanel</h1>
+        </div>
+        <nav class="flex-1 px-4 space-y-2 mt-6">
+            <a asp-action="Bookings" asp-controller="Admin"
+                   class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Bookings" ? "bg-primary/15 text-primary font-bold shadow-sm shadow-primary/5 ring-1 ring-primary/20" : "text-base-content/60 hover:bg-base-200 hover:text-base-content")">
+                <span
+                class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Bookings" ? "font-variation-fill-1" : "")">calendar_today</span>
+                <span class="text-sm">Lịch hẹn</span>
+            </a>
+            <a asp-action="Services" asp-controller="Admin"
+                   class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Services" ? "bg-primary/15 text-primary font-bold shadow-sm shadow-primary/5 ring-1 ring-primary/20" : "text-base-content/60 hover:bg-base-200 hover:text-base-content")">
+                <span
+                class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Services" ? "font-variation-fill-1" : "")">medical_services</span>
+                <span class="text-sm">Dịch vụ</span>
+            </a>
+            <a asp-action="Categories" asp-controller="Admin"
+                   class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Categories" ? "bg-primary/15 text-primary font-bold shadow-sm shadow-primary/5 ring-1 ring-primary/20" : "text-base-content/60 hover:bg-base-200 hover:text-base-content")">
+                <span
+                class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Categories" ? "font-variation-fill-1" : "")">category</span>
+                <span class="text-sm">Danh mục</span>
+            </a>
+            <a asp-action="Customers" asp-controller="Admin"
+                   class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Customers" ? "bg-primary/15 text-primary font-bold shadow-sm shadow-primary/5 ring-1 ring-primary/20" : "text-base-content/60 hover:bg-base-200 hover:text-base-content")">
+                <span
+                class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Customers" ? "font-variation-fill-1" : "")">group</span>
+                <span class="text-sm">Khách hàng</span>
+            </a>
+            <a asp-action="Settings" asp-controller="Admin"
+                   class="flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 @(ViewContext.RouteData.Values["Action"]?.ToString() == "Settings" ? "bg-primary/15 text-primary font-bold shadow-sm shadow-primary/5 ring-1 ring-primary/20" : "text-base-content/60 hover:bg-base-200 hover:text-base-content")">
+                <span
+                class="material-symbols-outlined @(ViewContext.RouteData.Values["Action"]?.ToString() == "Settings" ? "font-variation-fill-1" : "")">settings</span>
+                <span class="text-sm">Cấu hình</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-base-200">
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post" id="logoutForm">
+                <button type="submit"
+                        class="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-error hover:bg-error/10 transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined">logout</span>
+                    <span class="text-sm font-medium">Đăng xuất</span>
+                </button>
+                @Html.AntiForgeryToken()
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-base-200/50">
+        <!-- Header -->
+        <header class="h-16 border-b border-base-200 bg-base-100 flex items-center justify-between px-8">
+            <div class="flex items-center gap-4">
+                <h2 class="text-lg font-bold text-base-content">@ViewData["Title"]</h2>
+            </div>
+            <div class="flex items-center gap-6">
+                <div class="relative group">
+                    <span class="material-symbols-outlined text-base-content/60 cursor-pointer">notifications</span>
+                    <span
+                    class="absolute top-0 right-0 w-2 h-2 bg-primary rounded-full border-2 border-base-100"></span>
+                </div>
+                <div class="flex items-center gap-3 pl-6 border-l border-base-200">
+                    <div class="text-right">
+                        <p class="text-sm font-semibold leading-tight text-base-content">@User.Identity?.Name</p>
+                        <p class="text-xs text-base-content/60">Quản trị viên</p>
+                    </div>
+                    <img alt="Avatar Admin" class="w-10 h-10 rounded-full border border-base-200"
+                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdaQLGikiiPV8VDayJDKOLqZiVnKSELX4FNQzedMvRPIgo82WmA_gVxZBxsCwZfIKy6rEbvs3PPGS1otH67UubiXNdhtXRp0jdlUnuNsMo0lZjvMJKr_K5Wg7B0PgJNWImX7EHd4NMnywZRimQdHKHYGX1S1lEY5AItppXec8QXAXuULW0JmqvONdFCblTvZqs_EKP3flz_7OMbzfYnDx5FRiiX85LoWf9B24vKvgXvqpIJyTJa33W9GDKKcRTTusWyBnKQQ566TV_" />
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-y-auto p-8 relative">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div id="toast-success"
+                     class="fixed top-20 right-8 z-50 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div
+                        class="bg-primary text-primary-content px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        <span>@TempData["SuccessMessage"]</span>
+                        <button onclick="document.getElementById('toast-success').remove()"
+                                class="ml-4 opacity-50 hover:opacity-100 transition-opacity">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
+                    </div>
+                </div>
+                <script>
+                                setTimeout(() => {
+                                    const toast = document.getElementById('toast-success');
+                                    if (toast) {
+                                        toast.classList.add('fade-out');
+                                        toast.classList.add('translate-x-full');
+                                        toast.classList.add('transition-all');
+                                        toast.classList.add('duration-500');
+                                        setTimeout(() => toast.remove(), 500);
+                                    }
+                                }, 3000);
+                </script>
+            }
+            @RenderBody()
+        </div>
+    </main>
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

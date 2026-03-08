@@ -1,0 +1,157 @@
+@model BarberBookingWeb.Models.Booking
+@{
+    ViewData["Title"] = "Đặt lịch hộ khách";
+    Layout = "_AdminLayout";
+    var customers = ViewBag.Customers as IEnumerable<BarberBookingWeb.Models.AdminAccount> ?? new
+List<BarberBookingWeb.Models.AdminAccount>();
+    var services = ViewBag.Services as IEnumerable<BarberBookingWeb.Models.BarberService> ?? new
+List<BarberBookingWeb.Models.BarberService>();
+}
+
+<div class="max-w-3xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
+    <div class="flex items-center gap-4 mb-8">
+        <a asp-action="Bookings"
+               class="w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Đặt lịch mới</h3>
+    </div>
+
+    <form asp-action="CreateBooking" method="post"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-8">
+        
+        <div asp-validation-summary="All" class="text-xs text-red-500 font-bold bg-red-50 dark:bg-red-900/10 p-4 rounded-xl list-none"></div>
+        
+        <!-- Customer Selection -->
+        <div class="space-y-4">
+            <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">person</span>
+                Thông tin khách hàng
+            </h4>
+            
+            <div class="space-y-2">
+                <label class="text-xs font-black uppercase text-slate-500 tracking-wider">Chọn khách hàng (Có
+                    sẵn)</label>
+                    <select id="CustomerSelect" asp-for="CustomerId"
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all">
+                        <option value="">-- Khách vãng lai (Tự nhập) --</option>
+                        @foreach (var c in customers)
+                        {
+                            <option value="@c.Id" data-name="@c.FullName" data-phone="@c.PhoneNumber" data-email="@c.Email">
+                                @(c.FullName ?? c.Username) (@c.PhoneNumber)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label asp-for="CustomerName" class="text-xs font-black uppercase text-slate-500 tracking-wider">Tên
+                                khách hàng</label>
+                                <input asp-for="CustomerName" id="CustomerName"
+                                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                       placeholder="Nhập tên..." />
+                                <span asp-validation-for="CustomerName" class="text-xs text-red-500"></span>
+                            </div>
+                            <div class="space-y-2">
+                                <label asp-for="CustomerPhone" class="text-xs font-black uppercase text-slate-500 tracking-wider">Số
+                                    điện thoại</label>
+                                    <input asp-for="CustomerPhone" id="CustomerPhone"
+                                           class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                           placeholder="090xxxxx" />
+                                    <span asp-validation-for="CustomerPhone" class="text-xs text-red-500"></span>
+                                </div>
+                            </div>
+            
+                            <div class="space-y-2">
+                                <label asp-for="CustomerEmail" class="text-xs font-black uppercase text-slate-500 tracking-wider">Email
+                                    (Không bắt buộc)</label>
+                                    <input asp-for="CustomerEmail" id="CustomerEmail" type="email"
+                                           class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                           placeholder="abc@example.com" />
+                                </div>
+                            </div>
+
+                            <!-- Service Selection -->
+                            <div class="space-y-4">
+                                <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-primary">content_cut</span>
+                                    Chọn dịch vụ
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    @foreach (var s in services)
+                                    {
+                                        <label
+                                            class="group flex items-center gap-3 p-4 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer">
+                                            <input type="checkbox" name="serviceIds" value="@s.Id"
+                                                   class="w-5 h-5 rounded-lg border-slate-300 text-primary focus:ring-primary" />
+                                            <div class="flex flex-col">
+                                                <span
+                                                class="text-sm font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">@s.Name</span>
+                                                <span class="text-xs text-slate-500">@s.Price.ToString("N0") VNĐ • @s.DurationInMinutes
+                                                    phút</span>
+                                                </div>
+                                            </label>
+                                        }
+                                    </div>
+                                </div>
+
+                                <!-- Time and Notes -->
+                                <div class="space-y-4">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-primary">schedule</span>
+                                        Thời gian & Ghi chú
+                                    </h4>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                        <div class="space-y-2">
+                                            <label asp-for="StartTime" class="text-xs font-black uppercase text-slate-500 tracking-wider">Giờ
+                                                đến</label>
+                                                <input asp-for="StartTime" type="datetime-local"
+                                                       class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all" />
+                                                <span asp-validation-for="StartTime" class="text-xs text-red-500"></span>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <label asp-for="EndTime" class="text-xs font-black uppercase text-slate-500 tracking-wider">Giờ xong
+                                                    (Dự kiến)</label>
+                                                    <input asp-for="EndTime" type="datetime-local"
+                                                           class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all" />
+                                                    <span asp-validation-for="EndTime" class="text-xs text-red-500"></span>
+                                                </div>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <label asp-for="Notes" class="text-xs font-black uppercase text-slate-500 tracking-wider">Ghi chú từ
+                                                    admin</label>
+                                                    <textarea asp-for="Notes" rows="3"
+                                                              class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                                              placeholder="Ví dụ: Khách hẹn ưu tiên thợ A..."></textarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                                                <a asp-action="Bookings"
+                                                   class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors">Hủy</a>
+                                                <button type="submit"
+                                                        class="px-8 py-2.5 bg-primary text-background-dark rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all text-sm">Xác
+                                                    nhận đặt lịch</button>
+                                                </div>
+                                            </form>
+                                        </div>
+
+                                        @section Scripts {
+                                            <script>
+                                                document.getElementById('CustomerSelect').addEventListener('change', function () {
+                                                    const selected = this.options[this.selectedIndex];
+                                                    if (selected.value) {
+                                                        document.getElementById('CustomerName').value = selected.getAttribute('data-name');
+                                                        document.getElementById('CustomerPhone').value = selected.getAttribute('data-phone');
+                                                        document.getElementById('CustomerEmail').value = selected.getAttribute('data-email');
+                                                    } else {
+                                                        document.getElementById('CustomerName').value = '';
+                                                        document.getElementById('CustomerPhone').value = '';
+                                                        document.getElementById('CustomerEmail').value = '';
+                                                    }
+                                                });
+                                            </script>
+                                            @{
+                                                await Html.RenderPartialAsync("_ValidationScriptsPartial");
+                                            }
+                                        }

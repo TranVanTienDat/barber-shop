@@ -1,0 +1,73 @@
+@model BarberBookingWeb.Models.AdminAccount
+@{
+    ViewData["Title"] = "Chỉnh sửa khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
+    <div class="flex items-center gap-4 mb-8">
+        <a asp-action="Customers"
+               class="w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Chỉnh sửa: @(Model.FullName ?? Model.Username)
+        </h3>
+    </div>
+
+    <form asp-action="EditCustomer" method="post"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-6">
+        
+        <div asp-validation-summary="All"
+             class="text-xs text-red-500 font-bold bg-red-50 dark:bg-red-900/10 p-4 rounded-xl list-none"></div>
+        
+        <input type="hidden" asp-for="Id" />
+
+        <div class="space-y-2 opacity-60">
+            <label asp-for="Username" class="text-xs font-black uppercase text-slate-500 tracking-wider">Tên đăng nhập
+                (Username)</label>
+                <input asp-for="Username" readonly
+                       class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl outline-none text-sm font-medium cursor-not-allowed" />
+            </div>
+
+            <div class="space-y-2">
+                <label asp-for="FullName" class="text-xs font-black uppercase text-slate-500 tracking-wider">Họ và
+                    tên</label>
+                    <input asp-for="FullName"
+                           class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                           placeholder="Ví dụ: Nguyễn Văn A" />
+                    <span asp-validation-for="FullName" class="text-xs text-red-500"></span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label asp-for="PhoneNumber" class="text-xs font-black uppercase text-slate-500 tracking-wider">Số điện
+                            thoại</label>
+                            <input asp-for="PhoneNumber"
+                                   class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                   placeholder="090xxxxx" />
+                            <span asp-validation-for="PhoneNumber" class="text-xs text-red-500"></span>
+                        </div>
+                        <div class="space-y-2">
+                            <label asp-for="Email" class="text-xs font-black uppercase text-slate-500 tracking-wider">Email</label>
+                            <input asp-for="Email" type="email"
+                                   class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"
+                                   placeholder="abc@example.com" />
+                            <span asp-validation-for="Email" class="text-xs text-red-500"></span>
+                        </div>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                        <a asp-action="Customers"
+                           class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors">Hủy</a>
+                        <button type="submit"
+                                class="px-8 py-2.5 bg-primary text-background-dark rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all text-sm">Cập
+                            nhật</button>
+                        </div>
+                    </form>
+                </div>
+
+                @section Scripts {
+                    @{
+                        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+                    }
+                }

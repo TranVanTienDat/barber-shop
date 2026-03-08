@@ -1,0 +1,179 @@
+@model BarberBookingWeb.Models.Booking
+@{
+    ViewData["Title"] = "Hủy Lịch Hẹn";
+    Layout = "_PublicLayout";
+}
+
+<div class="max-w-xl mx-auto mt-12 px-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="p-8 md:p-12 text-center">
+            
+            @if (Model == null)
+            {
+                <div class="w-20 h-20 bg-red-500/10 text-red-500 mx-auto rounded-full flex items-center justify-center mb-6">
+                    <span class="material-symbols-outlined text-4xl">error</span>
+                </div>
+                <h1 class="text-2xl font-black mb-4 text-slate-900 dark:text-white">Không Tìm Thấy Lịch Hẹn</h1>
+                <p class="text-slate-500 mb-8">@ViewBag.Message</p>
+                <a href="/Booking" class="btn btn-secondary btn-wide rounded-xl">Quay Lại Trang Chủ</a>
+            }
+            else if (Model.Status == BarberBookingWeb.Models.BookingStatus.Cancelled)
+            {
+                <div class="w-20 h-20 bg-primary/10 text-primary mx-auto rounded-full flex items-center justify-center mb-6">
+                    <span class="material-symbols-outlined text-4xl">check_circle</span>
+                </div>
+                <h1 class="text-2xl font-black mb-4 text-slate-900 dark:text-white">Lịch Hẹn Đã Hủy</h1>
+                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 mb-8 text-left border border-slate-100 dark:border-slate-800">
+                    <p class="text-slate-500 text-sm mb-4 text-center">Thông tin lịch hẹn đã hủy:</p>
+                    <div class="flex flex-col gap-3">
+                         <div class="flex justify-between items-start gap-4 text-sm">
+                            <span class="text-slate-400 shrink-0">Dịch vụ:</span>
+                            <span class="font-bold text-right text-slate-900 dark:text-white">@string.Join(", ", Model.BookingServices.Select(bs => bs.BarberService.Name))</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-slate-400">Thời gian:</span>
+                            <span class="font-bold text-slate-900 dark:text-white">@Model.StartTime.ToString("HH:mm") - @Model.StartTime.ToString("dd/MM/yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+                <a href="/Booking" class="btn btn-primary btn-wide rounded-xl text-white">Đặt Lịch Mới</a>
+            }
+            else
+            {
+                <div class="w-20 h-20 bg-orange-500/10 text-orange-500 mx-auto rounded-full flex items-center justify-center mb-6">
+                    <span class="material-symbols-outlined text-4xl">event_busy</span>
+                </div>
+                <h1 class="text-2xl font-black mb-2 text-slate-900 dark:text-white">Xác Nhận Hủy Lịch</h1>
+                <p class="text-slate-500 mb-8 leading-relaxed">Bạn có chắc chắn muốn hủy yêu cầu đặt lịch làm đẹp này không?</p>
+
+                <!-- Booking Details Card -->
+                <div class="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 mb-8 text-left border border-slate-100 dark:border-slate-800">
+                    <div class="flex items-start gap-4 mb-6">
+                        <div class="w-12 h-12 bg-white dark:bg-slate-800 rounded-xl shadow-sm flex items-center justify-center shrink-0 border border-slate-100 dark:border-slate-700">
+                            <span class="material-symbols-outlined text-primary">content_cut</span>
+                        </div>
+                        <div>
+                            <div class="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Dịch vụ đã chọn</div>
+                            <div class="font-bold text-slate-900 dark:text-white leading-tight">
+                                @string.Join(", ", Model.BookingServices.Select(bs => bs.BarberService.Name))
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 border-t border-slate-200 dark:border-slate-700 pt-6">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase font-black">Ngày hẹn</div>
+                                <div class="text-sm font-bold text-slate-900 dark:text-white">@Model.StartTime.ToString("dd/MM/yyyy")</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                             <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-primary text-sm">schedule</span>
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 uppercase font-black">Giờ hẹn</div>
+                                <div class="text-sm font-bold text-slate-900 dark:text-white">@Model.StartTime.ToString("HH:mm")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                    <button id="btnCancel" onclick="confirmCancel('@Model.CancellationGuid')" class="btn btn-error btn-lg rounded-2xl normal-case font-black shadow-lg shadow-error/20 text-white">
+                        <span id="btnText">Xác Nhận Hủy Lịch Ngay</span>
+                        <span id="btnLoader" class="loading loading-spinner hidden"></span>
+                    </button>
+                    <a href="/Booking" class="btn btn-ghost rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all text-slate-500">Quay Lại</a>
+                </div>
+            }
+        </div>
+    </div>
+    
+    <div class="mt-8 text-center px-8">
+        <p class="text-xs text-slate-400 leading-relaxed">Tiếp tục hành động này có nghĩa là khung giờ trên sẽ được mở lại cho khách hàng khác. Nếu bạn thay đổi ý định, hãy đặt lịch mới sớm nhất có thể.</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        async function confirmCancel(guid) {
+            const btn = document.getElementById('btnCancel');
+            const btnText = document.getElementById('btnText');
+            const btnLoader = document.getElementById('btnLoader');
+
+            // Show loading
+            btn.disabled = true;
+            btnText.classList.add('hidden');
+            btnLoader.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/Booking/DoCancel/' + guid, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Đã Hủy Lịch',
+                        text: result.message,
+                        confirmButtonText: 'Đóng',
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'btn btn-primary rounded-xl px-12 text-white',
+                            popup: 'rounded-[2rem] border-none font-sans dark:bg-slate-900 dark:text-white',
+                            title: 'font-black text-2xl',
+                            htmlContainer: 'text-slate-500'
+                        }
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi',
+                        text: result.message,
+                        confirmButtonText: 'Thử lại',
+                        buttonsStyling: false,
+                        customClass: {
+                            confirmButton: 'btn btn-error rounded-xl px-12 text-white',
+                            popup: 'rounded-[2rem] border-none font-sans dark:bg-slate-900 dark:text-white',
+                            title: 'font-black text-2xl'
+                        }
+                    });
+                    
+                    // Reset button
+                    btn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnLoader.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Lỗi kết nối',
+                    text: 'Không thể kết nối tới máy chủ. Vui lòng thử lại sau.',
+                    confirmButtonText: 'Đóng',
+                    buttonsStyling: false,
+                    customClass: {
+                        confirmButton: 'btn btn-error rounded-xl px-12 text-white'
+                    }
+                });
+                
+                // Reset button
+                btn.disabled = false;
+                btnText.classList.remove('hidden');
+                btnLoader.classList.add('hidden');
+            }
+        }
+    </script>
+}

@@ -1,0 +1,140 @@
+@model BarberBookingWeb.Models.BarberService
+@{
+    ViewData["Title"] = "Chỉnh sửa dịch vụ";
+    Layout = "_AdminLayout";
+}
+
+<div class="max-w-2xl mx-auto animate-in fade-in slide-in-from-right-4 duration-500">
+    <div class="flex items-center gap-4 mb-8">
+        <a asp-action="Services"
+               class="w-10 h-10 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-500 hover:text-primary transition-colors">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Chỉnh sửa: @Model.Name</h3>
+    </div>
+
+    <form asp-action="EditService" method="post" enctype="multipart/form-data"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 shadow-sm space-y-6">
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="ImageUrl" id="imageUrlHidden" />
+
+        <div class="space-y-2">
+            <label asp-for="Name" class="text-xs font-black uppercase text-slate-500 tracking-wider">Tên dịch vụ</label>
+            <input asp-for="Name"
+                   class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all" />
+            <span asp-validation-for="Name" class="text-xs text-red-500"></span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-2">
+                <label asp-for="CategoryId" class="text-xs font-black uppercase text-slate-500 tracking-wider">Danh
+                    mục</label>
+                    <select asp-for="CategoryId"
+                            class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all">
+                        <option value="">-- Chọn danh mục --</option>
+                        @foreach (var cat in (IEnumerable<BarberBookingWeb.Models.Category>)ViewBag.Categories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-xs text-red-500"></span>
+                </div>
+                <div class="space-y-2">
+                    <label asp-for="Price" class="text-xs font-black uppercase text-slate-500 tracking-wider">Giá tiền
+                        (VNĐ)</label>
+                        <input asp-for="Price" type="number"
+                               class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all" />
+                        <span asp-validation-for="Price" class="text-xs text-red-500"></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label asp-for="DurationInMinutes"
+                               class="text-xs font-black uppercase text-slate-500 tracking-wider">Thời gian (Phút)</label>
+                        <input asp-for="DurationInMinutes" type="number"
+                               class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all" />
+                        <span asp-validation-for="DurationInMinutes" class="text-xs text-red-500"></span>
+                    </div>
+
+                    @* Image Upload *@
+                    <div class="space-y-2">
+                        <label class="text-xs font-black uppercase text-slate-500 tracking-wider">Hình ảnh dịch vụ</label>
+
+                        @* Preview Box *@
+                        <div id="imagePreviewWrapper"
+                             class="w-full h-36 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 flex items-center justify-center overflow-hidden cursor-pointer transition-all hover:border-primary/60"
+                             onclick="document.getElementById('imageFileInput').click()">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img id="imagePreview" src="@Model.ImageUrl" alt="Ảnh hiện tại"
+                                     class="w-full h-full object-cover rounded-xl" />
+                                <div id="imagePlaceholder"
+                                     class="hidden flex flex-col items-center gap-2 text-slate-400 pointer-events-none">
+                                    <span class="material-symbols-outlined text-4xl">add_photo_alternate</span>
+                                    <span class="text-xs font-medium">Click để chọn ảnh</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <img id="imagePreview" src="" alt="Preview" class="hidden w-full h-full object-cover rounded-xl" />
+                                <div id="imagePlaceholder"
+                                     class="flex flex-col items-center gap-2 text-slate-400 pointer-events-none">
+                                    <span class="material-symbols-outlined text-4xl">add_photo_alternate</span>
+                                    <span class="text-xs font-medium">Click để chọn ảnh</span>
+                                </div>
+                            }
+                        </div>
+
+                        @* Hidden file input *@
+                        <input type="file" id="imageFileInput" name="imageFile" accept="image/*" class="hidden" />
+
+                        @* Upload button *@
+                        <button type="button" onclick="document.getElementById('imageFileInput').click()"
+                                class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary transition-all">
+                            <span class="material-symbols-outlined text-base">upload</span>
+                            Thay ảnh mới
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label asp-for="Description" class="text-xs font-black uppercase text-slate-500 tracking-wider">Mô tả dịch
+                        vụ</label>
+                        <textarea asp-for="Description" rows="4"
+                                  class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm font-medium transition-all"></textarea>
+                        <span asp-validation-for="Description" class="text-xs text-red-500"></span>
+                    </div>
+
+                    <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                        <a asp-action="Services"
+                           class="px-6 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-50 transition-colors">Hủy</a>
+                        <button type="submit"
+                                class="px-8 py-2.5 bg-primary text-background-dark rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-105 transition-all text-sm">Cập
+                            nhật</button>
+                        </div>
+                    </form>
+                </div>
+
+                @section Scripts {
+                    @{
+                        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+                    }
+                    <script>
+                        const fileInput = document.getElementById('imageFileInput');
+                        const preview = document.getElementById('imagePreview');
+                        const placeholder = document.getElementById('imagePlaceholder');
+
+                        fileInput.addEventListener('change', function () {
+                            const file = this.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = function (e) {
+                                preview.src = e.target.result;
+                                preview.classList.remove('hidden');
+                                if (placeholder) placeholder.classList.add('hidden');
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                    </script>
+                }

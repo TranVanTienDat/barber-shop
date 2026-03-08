@@ -1,0 +1,170 @@
+@model BarberBookingWeb.Models.PagedResult<BarberBookingWeb.Models.AdminAccount>
+@{
+    ViewData["Title"] = "Quản lý khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<div class="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
+    <!-- Header Area -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-base-content">Cộng đồng khách hàng</h3>
+            <p class="text-sm text-base-content/60">Xem danh sách khách hàng và lịch sử tương tác.</p>
+        </div>
+        <div class="flex gap-3">
+            <a asp-action="CreateCustomer" class="btn btn-primary flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg">person_add</span>
+                Thêm khách mới
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div
+            class="bg-primary/10 border border-primary/20 text-primary px-4 py-3 rounded-xl flex items-center gap-2 animate-in fade-in zoom-in duration-300">
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            <span class="text-sm font-bold">@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    <!-- Filtering Area -->
+    <form method="get" class="bg-base-100 p-5 border border-base-content/10 rounded-2xl shadow-sm mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="lg:col-span-4">
+                <label class="block text-xs font-bold text-base-content/60 mb-1.5 uppercase tracking-wider">Tìm
+                    kiếm</label>
+                    <div class="relative">
+                        <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 text-lg">search</span>
+                        <input type="text" name="search" value="@ViewBag.Search" placeholder="Tên, Email hoặc SĐT..."
+                               class="input input-bordered w-full pl-10" />
+                    </div>
+                </div>
+            </div>
+        
+            <div
+                class="mt-5 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <span class="text-sm font-bold opacity-70 whitespace-nowrap">Hiển thị:</span>
+                    <select name="pageSize" class="select select-bordered select-sm">
+                        <option value="10" selected="@(Model.PageSize == 10 ? "selected" : null)">10 dòng</option>
+                        <option value="20" selected="@(Model.PageSize == 20 ? "selected" : null)">20 dòng</option>
+                        <option value="50" selected="@(Model.PageSize == 50 ? "selected" : null)">50 dòng</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="/Admin/Customers" class="btn btn-ghost flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">clear_all</span>
+                        Xóa lọc
+                    </a>
+                    <button type="submit" class="btn btn-neutral flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Lọc dữ liệu
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Customers Table -->
+        <div class="bg-base-100 border border-base-content/10 rounded-2xl overflow-hidden shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-base-200/50 border-b border-base-content/10">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-base-content/60">Khách hàng</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-base-content/60">Liên hệ</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-base-content/60">Ngày đăng ký</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-base-content/60">Hạng</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-base-content/60 text-right">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+                    @foreach (var customer in Model.Items)
+                    {
+                        <tr class="hover:bg-base-200/30 transition-colors border-b border-base-content/5">
+                            <td class="px-6 py-5">
+                                <div class="flex items-center gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=@(customer.FullName ?? customer.Username)&background=19e680&color=112119"
+                                         class="w-10 h-10 rounded-xl shadow-sm" alt="Avatar" />
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-bold text-base-content">@(customer.FullName ??
+                                                                                                                            customer.Username)</span>
+                                            <span class="text-[10px] text-base-content/30 italic">@customer.Username</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm text-base-content font-medium">@(customer.PhoneNumber ?? "---")</span>
+                                        <span class="text-xs text-base-content/40">@(customer.Email ?? "---")</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-5 text-sm text-base-content/60">
+                                    @customer.RegisteredDate.ToString("dd/MM/yyyy")</td>
+                                    <td class="px-6 py-5">
+                                        <span
+                                        class="px-2.5 py-1 rounded-lg text-[10px] font-black uppercase bg-primary/10 text-primary border border-primary/20">Standard</span>
+                                    </td>
+                                    <td class="px-6 py-5 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <a asp-action="EditCustomer" asp-route-id="@customer.Id"
+                                                   class="btn btn-ghost btn-sm btn-circle text-base-content/40 hover:text-primary">
+                                                <span class="material-symbols-outlined text-[20px]">edit</span>
+                                            </a>
+                                            <form asp-action="DeleteCustomer" asp-route-id="@customer.Id" method="post"
+                                                  onsubmit="return confirm('Xóa khách hàng này?')">
+                                                <button type="submit"
+                                                        class="btn btn-ghost btn-sm btn-circle text-slate-400 hover:text-red-500">
+                                                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                    @if (!Model.Items.Any())
+                    {
+                        <div
+                            class="p-20 text-center flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-500 bg-base-100 rounded-2xl border border-base-content/10">
+                            <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center">
+                                <span class="material-symbols-outlined text-3xl text-base-content/20">person</span>
+                            </div>
+                            <div class="space-y-1">
+                                <h4 class="font-bold text-base-content text-lg">Chưa có khách hàng nào</h4>
+                                <p class="text-sm text-base-content/60">Thử một từ khóa khác hoặc tạo khách hàng mới.</p>
+                            </div>
+                        </div>
+                    }
+
+                    <!-- Pagination Controls -->
+                    @if (Model.TotalPages > 1)
+                    {
+                        <div
+                            class="bg-base-100 border border-base-200 mt-4 p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm rounded-2xl">
+                            <p class="text-sm text-base-content/70 font-medium">
+                                Đang hiển thị <span class="text-base-content font-bold">@((Model.CurrentPage - 1) * Model.PageSize +
+                                                                                                                                                    1)</span> đến
+                                <span class="text-base-content font-bold">@(Math.Min(Model.CurrentPage * Model.PageSize,
+                                                                                                                                                                    Model.TotalCount))</span> trong tổng số
+                                    <span class="text-base-content font-bold">@Model.TotalCount</span> bản ghi.
+                                </p>
+                                <div class="join">
+                                    @for (int i = 1; i <= Model.TotalPages; i++)
+                                    {
+                                        var pageUrl = Url.Action("Customers", new
+                                        {
+                                            page = i,
+                                            pageSize = Model.PageSize,
+                                            search = ViewBag.Search
+                                        });
+                                        <input class="join-item btn btn-square btn-sm" type="radio" name="customers-page" aria-label="@i"
+                                               checked="@(i == Model.CurrentPage ? "checked" : null)" onchange="window.location='@pageUrl'" />
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>

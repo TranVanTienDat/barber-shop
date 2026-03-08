@@ -1,0 +1,127 @@
+@model BarberBookingWeb.Models.PagedResult<BarberBookingWeb.Models.Category>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    Layout = "_AdminLayout";
+}
+
+<div class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Header Area -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h3 class="text-2xl font-bold text-base-content">Danh mục dịch vụ</h3>
+            <p class="text-sm text-base-content/60">Quản lý các nhóm phân loại dịch vụ.</p>
+        </div>
+        <a asp-action="CreateCategory" class="btn btn-primary flex items-center gap-2">
+            <span class="material-symbols-outlined text-lg">add_box</span>
+            Thêm danh mục mới
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success shadow-lg">
+            <span class="material-symbols-outlined">check_circle</span>
+            <span>@TempData["SuccessMessage"]</span>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-error shadow-lg">
+            <span class="material-symbols-outlined">error</span>
+            <span>@TempData["ErrorMessage"]</span>
+        </div>
+    }
+
+    <!-- Filtering Area -->
+    <form method="get" class="bg-base-100 p-5 border border-base-content/10 rounded-2xl shadow-sm mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="md:col-span-1">
+                <label class="block text-xs font-bold text-base-content/60 mb-1.5 uppercase tracking-wider">Tìm
+                    kiếm</label>
+                    <div class="relative">
+                        <span
+                        class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 text-lg">search</span>
+                        <input type="text" name="search" value="@ViewBag.Search" placeholder="Tên danh mục, mô tả..."
+                               class="input input-bordered w-full pl-10" />
+                    </div>
+                </div>
+                <div class="flex items-end gap-3 h-full">
+                    <button type="submit" class="btn btn-neutral flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Lọc dữ liệu
+                    </button>
+                    <a href="/Admin/Categories" class="btn btn-ghost flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[18px]">clear_all</span>
+                        Xóa lọc
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <!-- Categories Table -->
+        <div class="bg-base-100 border border-base-content/10 rounded-2xl overflow-hidden shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr class="bg-base-200/50">
+                            <th class="text-xs uppercase tracking-wider font-bold">ID</th>
+                            <th class="text-xs uppercase tracking-wider font-bold">Tên danh mục</th>
+                            <th class="text-xs uppercase tracking-wider font-bold">Mô tả</th>
+                            <th class="text-xs uppercase tracking-wider font-bold text-right">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr class="hover">
+                                <td class="font-mono text-xs opacity-50">#@item.Id</td>
+                                <td>
+                                    <span class="font-bold text-base-content">@item.Name</span>
+                                </td>
+                                <td>
+                                    <span class="text-xs text-base-content/60">@item.Description</span>
+                                </td>
+                                <td>
+                                    <div class="flex justify-end gap-2">
+                                        <a asp-action="EditCategory" asp-route-id="@item.Id"
+                                               class="btn btn-sm btn-ghost btn-circle text-info" title="Chỉnh sửa">
+                                            <span class="material-symbols-outlined">edit_note</span>
+                                        </a>
+                                        <form asp-action="DeleteCategory" asp-route-id="@item.Id" method="post"
+                                              onsubmit="return confirm('Lão đại có chắc chắn muốn xóa danh mục này?')">
+                                            <button type="submit" class="btn btn-sm btn-ghost btn-circle text-error"
+                                                    title="Xóa">
+                                                <span class="material-symbols-outlined">delete</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Items.Any())
+                        {
+                            <tr>
+                                <td colspan="4" class="text-center py-10 opacity-50 italic">Không tìm thấy danh mục nào</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="flex justify-center mt-6">
+                <div class="join">
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        var pageUrl = Url.Action("Categories", new { page = i, search = ViewBag.Search });
+                        <input class="join-item btn btn-square btn-sm" type="radio" name="categories-page" aria-label="@i"
+                               checked="@(i == Model.CurrentPage ? "checked" : null)" onchange="window.location='@pageUrl'" />
+                    }
+                </div>
+            </div>
+        }
+    </div>

@@ -1,0 +1,152 @@
+@model BarberBookingWeb.Models.EmailSettings
+@{
+    ViewData["Title"] = "Cấu hình Thông báo & Email";
+    Layout = "_AdminLayout";
+}
+
+<div class="p-6 bg-base-200 min-h-screen">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-base-content flex items-center gap-3">
+                    <span class="p-3 bg-primary/10 rounded-2xl text-primary">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </span>
+                    Cấu hình Thông báo & Email
+                </h1>
+                <p class="text-base-content/60 mt-1">Quản lý máy chủ SMTP và thông tin gửi email hệ thống</p>
+            </div>
+            <a href="@Url.Action("Index", "Admin")" class="btn btn-ghost">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Quay lại
+            </a>
+        </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success shadow-lg mb-6">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        }
+
+        <form asp-action="EmailSettings" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+            
+            <div class="card bg-base-100 shadow-xl border border-base-content/5 overflow-visible">
+                <div class="card-body">
+                    <h2 class="card-title text-xl mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-server text-secondary"></i>
+                        Thông số Máy chủ SMTP
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Máy chủ SMTP</span>
+                            </label>
+                            <input asp-for="SmtpServer" class="input input-bordered w-full focus:input-primary"
+                                   placeholder="e.g. smtp.gmail.com" />
+                            <span asp-validation-for="SmtpServer" class="text-error text-xs mt-1"></span>
+                        </div>
+                        
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Cổng (Port)</span>
+                            </label>
+                            <input asp-for="Port" type="number" class="input input-bordered w-full focus:input-primary"
+                                   placeholder="e.g. 587" />
+                            <span asp-validation-for="Port" class="text-error text-xs mt-1"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-control mt-4">
+                        <label class="label cursor-pointer justify-start gap-4">
+                            <input asp-for="EnableSsl" type="checkbox" class="checkbox checkbox-primary" />
+                            <span class="label-text font-semibold">Sử dụng SSL/TLS</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card bg-base-100 shadow-xl border border-base-content/5">
+                <div class="card-body">
+                    <h2 class="card-title text-xl mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-accent"></i>
+                        Xác thực & Người gửi
+                    </h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Tên người gửi</span>
+                            </label>
+                            <input asp-for="SenderName" class="input input-bordered w-full focus:input-primary"
+                                   placeholder="e.g. Barber Shop" />
+                            <span asp-validation-for="SenderName" class="text-error text-xs mt-1"></span>
+                        </div>
+                        
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Email người gửi</span>
+                            </label>
+                            <input asp-for="SenderEmail" class="input input-bordered w-full focus:input-primary"
+                                   placeholder="e.g. noreply@domain.com" />
+                            <span asp-validation-for="SenderEmail" class="text-error text-xs mt-1"></span>
+                        </div>
+
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Tên đăng nhập (Username)</span>
+                            </label>
+                            <input asp-for="Username" class="input input-bordered w-full focus:input-primary" />
+                            <span asp-validation-for="Username" class="text-error text-xs mt-1"></span>
+                        </div>
+                        
+                        <div class="form-control w-full">
+                            <label class="label">
+                                <span class="label-text font-semibold">Mật khẩu (App Password)</span>
+                            </label>
+                            <div class="relative">
+                                <input asp-for="Password" type="password"
+                                       class="input input-bordered w-full focus:input-primary pr-12" />
+                                <button type="button"
+                                        class="absolute right-3 top-1/2 -translate-y-1/2 text-base-content/40 hover:text-primary transition-colors"
+                                        onclick="togglePassword()">
+                                    <i class="fa-solid fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-error text-xs mt-1"></span>
+                            <label class="label">
+                                <span class="label-text-alt text-base-content/50 italic">Khuyên dùng "Mật khẩu ứng dụng"
+                                    nếu dùng Gmail</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-8">
+                    <button type="reset" class="btn btn-ghost px-8">Hủy thay đổi</button>
+                    <button type="submit" class="btn btn-primary px-12 shadow-lg shadow-primary/20">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Lưu cấu hình
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('Password');
+            const icon = document.getElementById('toggleIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>

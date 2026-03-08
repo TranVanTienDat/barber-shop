@@ -1,0 +1,55 @@
+@model BarberBookingWeb.Models.Category
+@{
+    ViewData["Title"] = "Chỉnh sửa danh mục";
+    Layout = "_AdminLayout";
+}
+
+<div class="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="mb-6 flex items-center gap-4">
+        <a asp-action="Categories" class="btn btn-ghost btn-circle">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </a>
+        <div>
+            <h3 class="text-2xl font-bold text-base-content">Chỉnh sửa danh mục</h3>
+            <p class="text-sm text-base-content/60">Cập nhật thông tin cho danh mục #@Model.Id</p>
+        </div>
+    </div>
+
+    <div class="card bg-base-100 border border-base-content/10 shadow-xl">
+        <div class="card-body">
+            <form asp-action="EditCategory" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="text-error text-sm mb-4"></div>
+
+                <div class="form-control w-full mb-4">
+                    <label asp-for="Name" class="label text-xs font-bold uppercase tracking-wider opacity-60"></label>
+                    <input asp-for="Name" class="input input-bordered w-full"
+                           placeholder="Ví dụ: Cắt tóc nam, Gội đầu..." />
+                    <span asp-validation-for="Name" class="text-error text-xs mt-1"></span>
+                </div>
+
+                <div class="form-control w-full mb-6">
+                    <label asp-for="Description"
+                           class="label text-xs font-bold uppercase tracking-wider opacity-60"></label>
+                    <textarea asp-for="Description" class="textarea textarea-bordered h-24"
+                              placeholder="Nhập mô tả cho danh mục này..."></textarea>
+                    <span asp-validation-for="Description" class="text-error text-xs mt-1"></span>
+                </div>
+
+                <div class="card-actions justify-end mt-6 border-t pt-6 border-base-content/5">
+                    <a asp-action="Categories" class="btn btn-ghost">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-8">
+                        <span class="material-symbols-outlined text-sm">save</span>
+                        Cập nhật
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

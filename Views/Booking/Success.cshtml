@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Đặt Lịch Thành Công";
+    Layout = "_PublicLayout";
+}
+
+<div
+    class="max-w-xl mx-auto mt-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 md:p-12 text-center shadow-xl shadow-primary/5">
+    <div
+        class="w-24 h-24 bg-primary/20 text-primary mx-auto rounded-full flex items-center justify-center mb-8 relative">
+        <div class="absolute inset-0 bg-primary/20 rounded-full animate-ping"></div>
+        <span class="material-symbols-outlined text-5xl relative z-10">check_circle</span>
+    </div>
+    
+    <h1 class="text-3xl font-black tracking-tight mb-4 text-slate-900 dark:text-white">Đặt Lịch Thành Công!</h1>
+    
+    <p class="text-slate-500 mb-8 leading-relaxed">
+        Cảm ơn bạn đã lựa chọn Salon. Thông tin đặt lịch và hướng dẫn quản lý đã được gửi vào <strong
+        class="text-slate-700 dark:text-slate-300">địa chỉ Email</strong> của bạn. Vui lòng kiểm tra hộp thư đến.
+    </p>
+
+    <div class="bg-slate-50 dark:bg-slate-950 rounded-2xl p-6 border border-slate-100 dark:border-slate-800 mb-8">
+        <p class="text-sm font-semibold text-slate-400 mb-2 uppercase tracking-widest">Tiếp theo là gì?</p>
+        <p class="text-slate-600 dark:text-slate-400 text-sm">
+            Tới ngày hẹn, vui lòng đến sớm hơn 5-10 phút để chúng tôi tiếp đón bạn một cách chu đáo nhất nhé. Gặp lại
+            bạn sớm tại Salon Làm Đẹp!
+        </p>
+    </div>
+
+    <a href="/Booking"
+           class="block w-full py-4 text-sm font-bold bg-primary text-background-dark rounded-xl hover:brightness-105 transition-colors shadow-lg shadow-primary/20">
+        Về Trang Chủ Đặt Lịch
+    </a>
+</div>

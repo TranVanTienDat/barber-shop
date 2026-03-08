@@ -1,0 +1,20 @@
+.material-symbols-outlined { 
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; 
+}
+
+/* Custom Cally Calendar Styles */
+calendar-date.cally {
+  --color-accent: var(--color-primary);
+  --color-text-on-accent: var(--color-primary-content);
+  color: var(--color-base-content);
+  background-color: var(--color-base-100);
+}
+
+calendar-month::part(button):hover {
+  background-color: var(--color-primary);
+  color: var(--color-primary-content) !important;
+}
+
+calendar-month::part(button today) {
+  color: white;
+}

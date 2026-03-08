@@ -1,0 +1,455 @@
+@model IEnumerable<BarberBookingWeb.Models.BarberService>
+
+@{
+    ViewData["Title"] = "Đặt Lịch Hẹn";
+    Layout = "_PublicLayout";
+}
+
+<div class="mb-12">
+    <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4">Đặt Lịch Hẹn Online</h1>
+    <p class="text-base-content/70 text-lg">Trải nghiệm dịch vụ chăm sóc tóc chuyên nghiệp tại không gian thư giãn.</p>
+</div>
+
+<form id="bookingForm" method="post" action="/Booking/Confirm" class="space-y-12">
+    <!-- Phân khu 1: Chọn Dịch Vụ -->
+    <section>
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-8">
+            <div class="flex items-center gap-3">
+                <div class="w-1.5 h-8 bg-primary rounded-full"></div>
+                <h2 class="text-2xl font-bold">1. Chọn Dịch Vụ</h2>
+            </div>
+            
+            <div class="flex items-center gap-2 w-full lg:w-2/3 xl:w-1/2">
+                <!-- Search Box -->
+                <div class="relative flex-1">
+                    <span
+                    class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-base-content/40 text-lg">search</span>
+                    <input type="text" id="serviceSearch" placeholder="Tìm tên dịch vụ khách hàng muốn..."
+                           class="input input-bordered w-full pl-10 h-11 bg-base-100 border-base-content/10 focus:border-primary transition-all shadow-sm" />
+                </div>
+                <!-- Category Filter -->
+                <select id="categoryFilter"
+                        class="select select-bordered h-11 min-h-0 w-[140px] md:w-[180px] bg-base-100 border-base-content/10 focus:border-primary transition-all text-sm shadow-sm">
+                    <option value="">Tất cả</option>
+                    @foreach (var cat in (IEnumerable<BarberBookingWeb.Models.Category>)ViewBag.Categories)
+                    {
+                        <option value="@cat.Name">@cat.Name</option>
+                    }
+                </select>
+            </div>
+        </div>
+
+        <div id="servicesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @foreach (var service in Model)
+            {
+                <label data-category="@(service.Category?.Name ?? service.CategoryName)" data-name="@service.Name.ToLower()"
+                       class="service-card group relative cursor-pointer bg-base-100 border border-base-content/10 rounded-2xl overflow-hidden hover:shadow-xl transition-all h-full flex flex-col hover:border-primary/50">
+                    <input type="checkbox" name="selectedServices" value="@service.Id" class="peer hidden"
+                           data-price="@service.Price" data-time="@service.DurationInMinutes" data-name="@service.Name" />
+                    <div
+                        class="absolute top-3 right-3 w-6 h-6 border-2 border-base-content/20 bg-base-100/80 rounded backdrop-blur peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-all shadow-sm z-10">
+                        <span
+                        class="material-symbols-outlined text-primary-content text-sm font-bold opacity-0 peer-checked:opacity-100 transition-opacity">check</span>
+                    </div>
+                    
+                    <div class="aspect-video w-full bg-base-200 relative">
+                        <!-- Pseudo-image placeholder -->
+                        <div class="absolute inset-0 flex items-center justify-center text-base-content/20">
+                            <span class="material-symbols-outlined text-4xl">cut</span>
+                        </div>
+                        <img src="@(string.IsNullOrEmpty(service.ImageUrl) ? "https://placehold.co/400x200/e2e8f0/64748b?text=Service" : service.ImageUrl)"
+                             alt="@service.Name" class="w-full h-full object-cover z-0"
+                             onerror="this.src='https://placehold.co/400x200/e2e8f0/64748b?text=Image+Not+Found'" />
+                    </div>
+
+                    <div class="p-5 flex flex-col flex-1 relative bg-base-100 peer-checked:bg-primary/10 transition-colors">
+                        <h3 class="font-bold text-lg mb-2 group-hover:text-primary transition-colors">@service.Name</h3>
+                        <p class="text-base-content/60 text-sm mb-4 flex-1 line-clamp-2">@service.Description</p>
+                        
+                        <div class="flex items-center justify-between mt-auto pt-4 border-t border-base-content/5">
+                            <span class="font-bold text-primary text-lg">@service.Price.ToString("N0")đ</span>
+                            <div
+                                class="flex items-center gap-1.5 text-base-content/40 text-xs font-semibold uppercase tracking-wide">
+                                <span class="material-symbols-outlined text-[16px]">schedule</span>
+                                <span>@service.DurationInMinutes phút</span>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            }
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="hidden py-20 text-center animate-in fade-in zoom-in duration-300">
+            <div
+                class="w-20 h-20 rounded-full bg-base-200 flex items-center justify-center mx-auto mb-4 text-base-content/20">
+                <span class="material-symbols-outlined text-4xl">search_off</span>
+            </div>
+            <h3 class="text-xl font-bold opacity-60">Không tìm thấy dịch vụ phù hợp</h3>
+            <p class="text-base-content/40 mt-1">Lão đại vui lòng thử từ khóa hoặc danh mục khác xem sao?</p>
+        </div>
+
+        <!-- Service Pagination -->
+        <div id="servicePaginationContainer" class="flex justify-center mt-10">
+            <div id="servicePagination" class="join shadow-sm border border-base-content/10">
+                <!-- Pagination buttons injected by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Phân khu 2: Thời Gian -->
+    <section>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-1.5 h-8 bg-primary rounded-full"></div>
+            <h2 class="text-2xl font-bold">2. Thời Gian</h2>
+        </div>
+
+        <div class="bg-base-100 border border-base-content/10 rounded-2xl p-6 md:p-8">
+            <!-- Calendar Header -->
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-bold">Chọn ngày</h3>
+                <div class="flex items-center gap-4 text-sm font-bold tracking-widest text-base-content/60 uppercase">
+                    <button type="button" id="prevMonth" class="hover:text-primary transition-colors"><span
+                        class="material-symbols-outlined text-lg translate-y-[2px]">chevron_left</span></button>
+                        <span id="monthYearDisplay">Tháng 10, 2026</span>
+                        <button type="button" id="nextMonth" class="hover:text-primary transition-colors"><span
+                            class="material-symbols-outlined text-lg translate-y-[2px]">chevron_right</span></button>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div class="mb-8">
+                        <div
+                            class="grid grid-cols-7 gap-1 text-center text-xs font-bold uppercase tracking-wider text-base-content/40 mb-2">
+                            <div>T2</div>
+                            <div>T3</div>
+                            <div>T4</div>
+                            <div>T5</div>
+                            <div>T6</div>
+                            <div>T7</div>
+                            <div class="text-error">CN</div>
+                        </div>
+                        <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                            <!-- Days injected by JS -->
+                        </div>
+                        <input type="hidden" name="bookingDate" id="bookingDate" value="" required />
+                    </div>
+
+                    <!-- Time Slots -->
+                    <h3 class="font-bold mb-4">Chọn giờ trống</h3>
+                    <div id="timeSlots" class="flex flex-wrap gap-3">
+                        <p class="text-sm text-base-content/60">Vui lòng chọn ngày để xem giờ.</p>
+                    </div>
+                    <input type="hidden" name="bookingTime" id="bookingTime" value="" required />
+                </div>
+            </section>
+
+            <!-- Phân khu 3: Thông Tin Liên Hệ -->
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-1.5 h-8 bg-primary rounded-full"></div>
+                    <h2 class="text-2xl font-bold">3. Thông Tin Liên Hệ</h2>
+                </div>
+
+                <div class="bg-base-100 border border-base-content/10 rounded-2xl p-6 md:p-8 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-bold text-base-content/80 mb-2">Họ và Tên</label>
+                            <input type="text" name="customerName"
+                                   class="w-full px-4 py-3 bg-base-200 border border-base-content/10 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-base-content/30"
+                                   placeholder="VD: Nguyễn Văn A" required minlength="2" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-base-content/80 mb-2">Số Điện Thoại</label>
+                            <input type="tel" name="customerPhone"
+                                   class="w-full px-4 py-3 bg-base-200 border border-base-content/10 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-base-content/30"
+                                   placeholder="090 123 4567" required pattern="[0-9]{10,12}" />
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-base-content/80 mb-2">Địa chỉ Email</label>
+                        <input type="email" name="customerEmail"
+                               class="w-full px-4 py-3 bg-base-200 border border-base-content/10 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-base-content/30"
+                               placeholder="email@example.com" required />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-base-content/80 mb-2">Ghi chú thêm <span
+                            class="text-base-content/30 font-normal">(Tùy chọn)</span></label>
+                            <textarea name="notes" rows="3"
+                                      class="w-full px-4 py-3 bg-base-200 border border-base-content/10 rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-base-content/30"
+                                      placeholder="Bạn có yêu cầu đặc biệt nào không?"></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tổng Kết & Submit -->
+                <div
+                    class="sticky bottom-4 z-20 md:static glass-card p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div>
+                        <p class="text-base-content/60 text-sm font-bold uppercase tracking-wider mb-1">Tổng Cộng Đơn Hàng</p>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-3xl font-black text-base-content" id="totalPrice">0đ</span>
+                            <span class="text-base-content/50 font-medium" id="totalTime">/ 0 phút</span>
+                        </div>
+                        <p class="text-xs text-base-content/40 mt-1" id="selectedServicesText">Chưa chọn dịch vụ nào</p>
+                    </div>
+                    <button type="submit" id="submitBtn"
+                            class="w-full md:w-auto px-8 py-4 bg-primary text-primary-content font-black text-lg rounded-xl hover:brightness-105 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2 shadow-xl shadow-primary/20 disabled:opacity-50 disabled:pointer-events-none"
+                            disabled>
+                        Xác Nhận Đặt Lịch
+                        <span class="material-symbols-outlined text-xl">arrow_forward</span>
+                    </button>
+                </div>
+                @Html.AntiForgeryToken()
+            </form>
+
+            @section Scripts {
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        // Logic for Price Validation
+                        const checkboxes = document.querySelectorAll('input[name="selectedServices"]');
+                        const submitBtn = document.getElementById('submitBtn');
+                        const totalPriceEl = document.getElementById('totalPrice');
+                        const totalTimeEl = document.getElementById('totalTime');
+                        const selectedTextEl = document.getElementById('selectedServicesText');
+            
+                        const timeSlotsContainer = document.getElementById('timeSlots');
+                        const bookingDateInput = document.getElementById('bookingDate');
+                        const bookingTimeInput = document.getElementById('bookingTime');
+
+                        // Pagination & Search Logic for Services
+                        const serviceCards = Array.from(document.querySelectorAll('.service-card'));
+                        const serviceSearch = document.getElementById('serviceSearch');
+                        const categoryFilter = document.getElementById('categoryFilter');
+                        const servicePagination = document.getElementById('servicePagination');
+                        const noResults = document.getElementById('noResults');
+                        const itemsPerPage = 6;
+                        let currentServicePage = 1;
+                        let filteredServices = [...serviceCards];
+
+                        function updateServicesDisplay() {
+                            const searchTerm = serviceSearch.value.toLowerCase().trim();
+                            const selectedCategory = categoryFilter.value;
+
+                            filteredServices = serviceCards.filter(card => {
+                                const name = card.getAttribute('data-name');
+                                const category = card.getAttribute('data-category');
+                                const matchesSearch = name.includes(searchTerm);
+                                const matchesCategory = selectedCategory === "" || category === selectedCategory;
+                                return matchesSearch && matchesCategory;
+                            });
+
+                            currentServicePage = 1;
+                            renderServicePage();
+                            renderServicePagination();
+                        }
+
+                        function renderServicePage() {
+                            const start = (currentServicePage - 1) * itemsPerPage;
+                            const end = start + itemsPerPage;
+
+                            serviceCards.forEach(card => card.classList.add('hidden'));
+                            
+                            if (filteredServices.length === 0) {
+                                noResults.classList.remove('hidden');
+                            } else {
+                                noResults.classList.add('hidden');
+                                filteredServices.slice(start, end).forEach(card => card.classList.remove('hidden'));
+                            }
+                        }
+
+                        function renderServicePagination() {
+                            const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
+                            servicePagination.innerHTML = '';
+                            
+                            if (totalPages <= 1) {
+                                document.getElementById('servicePaginationContainer').classList.add('hidden');
+                                return;
+                            }
+                            
+                            document.getElementById('servicePaginationContainer').classList.remove('hidden');
+
+                            for (let i = 1; i <= totalPages; i++) {
+                                const btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = `join-item btn btn-sm ${i === currentServicePage ? 'btn-primary' : 'btn-ghost'}`;
+                                btn.textContent = i;
+                                btn.addEventListener('click', () => {
+                                    currentServicePage = i;
+                                    renderServicePage();
+                                    renderServicePagination();
+                                    document.getElementById('bookingForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                });
+                                servicePagination.appendChild(btn);
+                            }
+                        }
+
+                        serviceSearch.addEventListener('input', updateServicesDisplay);
+                        categoryFilter.addEventListener('change', updateServicesDisplay);
+                        
+                        // Initial Call
+                        updateServicesDisplay();
+
+                        function updatePricing() {
+                            let total = 0;
+                            let minutes = 0;
+                            let count = 0;
+                            let names = [];
+
+                            checkboxes.forEach(cb => {
+                                if (cb.checked) {
+                                    total += parseFloat(cb.getAttribute('data-price') || 0);
+                                    minutes += parseInt(cb.getAttribute('data-time') || 0);
+                                    names.push(cb.getAttribute('data-name'));
+                                    count++;
+                                }
+                            });
+
+                            totalPriceEl.textContent = new Intl.NumberFormat('vi-VN').format(total) + 'đ';
+                            totalTimeEl.textContent = `/ ${minutes} phút`;
+                            selectedTextEl.textContent = count > 0 ? `${count} dịch vụ đã chọn (${names.join(', ')})` : 'Chưa chọn dịch vụ nào';
+
+                            validateForm();
+                        }
+
+                        function validateForm() {
+                            const hasServices = Array.from(checkboxes).some(cb => cb.checked);
+                            const hasDate = bookingDateInput.value !== '';
+                            const hasTime = bookingTimeInput.value !== '';
+                
+                            submitBtn.disabled = !(hasServices && hasDate && hasTime);
+                        }
+
+                        checkboxes.forEach(cb => cb.addEventListener('change', updatePricing));
+
+                        // Logic for Calendar
+                        const today = new Date();
+                        let currentMonth = today.getMonth();
+                        let currentYear = today.getFullYear();
+
+                        const monthNames = ["Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6", "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"];
+
+                        function renderCalendar() {
+                            document.getElementById('monthYearDisplay').textContent = `${monthNames[currentMonth]}, ${currentYear}`;
+                            const grid = document.getElementById('calendarGrid');
+                            grid.innerHTML = '';
+
+                            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+                            const prevMonthDays = new Date(currentYear, currentMonth, 0).getDate();
+                
+                            // Adjust first day to start on Monday (0 instead of Sunday)
+                            let startDay = firstDay - 1;
+                            if (startDay < 0) startDay = 6;
+
+                            // Previous month padding
+                            for (let i = startDay - 1; i >= 0; i--) {
+                                createDayElement(prevMonthDays - i, true);
+                            }
+
+                            // Current month
+                            for (let i = 1; i <= daysInMonth; i++) {
+                                const dateObj = new Date(currentYear, currentMonth, i);
+                                const isPast = dateObj.setHours(0, 0, 0, 0) < today.setHours(0, 0, 0, 0);
+                                createDayElement(i, false, isPast);
+                            }
+                        }
+
+                        function createDayElement(day, isPadding, isPast = false) {
+                            const el = document.createElement('div');
+                            const dateStr = `${currentYear}-${(currentMonth + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                            const isSelected = !isPadding && !isPast && bookingDateInput.value === dateStr;
+
+                            el.className = `h-12 flex items-center justify-center text-sm font-semibold rounded-lg transition-all border shadow-sm ${isPadding ? 'text-base-content/10 bg-base-200 border-transparent cursor-default' :
+                                isPast ? 'text-base-content/10 bg-base-200 border-transparent cursor-not-allowed' :
+                                    isSelected ? 'selected-day bg-primary text-primary-content border-primary shadow-lg shadow-primary/20 scale-105 z-10' :
+                                        'text-base-content bg-base-100 border-base-content/10 cursor-pointer hover:border-primary hover:text-primary hover:shadow-primary/10'
+                                }`;
+                            el.textContent = day;
+
+                            if (!isPadding && !isPast) {
+                                el.addEventListener('click', () => {
+                                    // Deselect previous
+                                    document.querySelectorAll('.selected-day').forEach(prev => {
+                                        prev.classList.remove('selected-day', 'bg-primary', 'text-background-dark', 'border-primary', 'shadow-lg', 'shadow-primary/20', 'scale-105', 'z-10');
+                                        prev.classList.add('text-slate-700', 'dark:text-slate-200', 'bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700', 'cursor-pointer');
+                                    });
+
+                                    // Select current
+                                    el.classList.remove('text-slate-700', 'dark:text-slate-200', 'bg-white', 'dark:bg-slate-800', 'border-slate-200', 'dark:border-slate-700');
+                                    el.classList.add('selected-day', 'bg-primary', 'text-background-dark', 'border-primary', 'shadow-lg', 'shadow-primary/20', 'scale-105', 'z-10');
+
+                                    bookingDateInput.value = dateStr;
+                                    bookingTimeInput.value = ''; // Reset time
+                        
+                                    loadTimeSlots(dateStr);
+                                    validateForm();
+                                });
+                            }
+                            document.getElementById('calendarGrid').appendChild(el);
+                        }
+
+                        document.getElementById('prevMonth').addEventListener('click', () => {
+                            currentMonth--;
+                            if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+                            renderCalendar();
+                        });
+
+                        document.getElementById('nextMonth').addEventListener('click', () => {
+                            currentMonth++;
+                            if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+                            renderCalendar();
+                        });
+
+                        renderCalendar();
+
+                        // Logic for Time Slots (Mocking API call)
+                        async function loadTimeSlots(dateStr) {
+                            timeSlotsContainer.innerHTML = '<div class="text-sm font-bold text-slate-400 animate-pulse">Đang tải giờ trống...</div>';
+                
+                            try {
+                                const response = await fetch(`/api/bookings/available-slots?date=${dateStr}`);
+                                const slots = await response.json();
+                    
+                                timeSlotsContainer.innerHTML = '';
+                    
+                                if (slots.length === 0) {
+                                    timeSlotsContainer.innerHTML = '<div class="text-sm text-red-500 font-medium bg-red-50 p-3 rounded-lg w-full text-center">Rất tiếc, ngày này đã kín lịch. Vui lòng chọn ngày khác.</div>';
+                                    return;
+                                }
+
+                                slots.forEach(slot => {
+                                    const btn = document.createElement('button');
+                                    btn.type = 'button';
+                                    btn.className = `px-5 py-2.5 rounded-xl border text-sm font-bold transition-all ${slot.isAvailable ?
+                                        'bg-base-100 border-base-content/10 text-base-content hover:border-primary hover:text-primary hover:shadow-lg hover:-translate-y-0.5' :
+                                        'bg-base-200 border-transparent text-base-content/20 cursor-not-allowed opacity-50'
+                                        }`;
+                                    btn.textContent = slot.time;
+                        
+                                    if (slot.isAvailable) {
+                                        btn.addEventListener('click', () => {
+                                            // Deselect others
+                                            document.querySelectorAll('.selected-time').forEach(el => {
+                                                el.classList.remove('selected-time', 'bg-primary', 'text-background-dark', 'border-primary', 'shadow-primary/30', 'shadow-xl');
+                                                el.classList.add('bg-white', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
+                                            });
+                                            // Select current
+                                            btn.classList.remove('bg-white', 'dark:bg-slate-800', 'text-slate-700', 'dark:text-slate-300', 'border-slate-200', 'dark:border-slate-700');
+                                            btn.classList.add('selected-time', 'bg-primary', 'text-background-dark', 'border-primary', 'shadow-primary/30', 'shadow-xl');
+                                
+                                            bookingTimeInput.value = slot.time;
+                                            validateForm();
+                                        });
+                                    }
+                        
+                                    timeSlotsContainer.appendChild(btn);
+                                });
+                            } catch (error) {
+                                console.error('Error fetching slots', error);
+                                timeSlotsContainer.innerHTML = '<div class="text-sm text-red-500 font-medium">Lỗi kết nối. Vui lòng thử lại.</div>';
+                            }
+                        }
+                    });
+                </script>
+            }
