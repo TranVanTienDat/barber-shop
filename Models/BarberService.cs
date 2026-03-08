@@ -6,15 +6,15 @@ public class BarberService
 {
     public int Id { get; set; }
 
+    [Required(ErrorMessage = "Vui lòng chọn danh mục")]
     [Display(Name = "Danh mục")]
-    public int CategoryId { get; set; }
+    public int? CategoryId { get; set; }
 
     [Display(Name = "Danh mục")]
     public virtual Category? Category { get; set; }
 
-    [Required(ErrorMessage = "Vui lòng chọn danh mục")]
     [StringLength(200)]
-    public string CategoryName { get; set; } = string.Empty;
+    public string? CategoryName { get; set; }
 
     [Required(ErrorMessage = "Vui lòng nhập tên dịch vụ")]
     [StringLength(200)]

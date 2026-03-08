@@ -7,7 +7,8 @@
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5260",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION": "Server=localhost,1433;Database=BarberBookingDB;User Id=sa;Password=Admin@123xyz;TrustServerCertificate=True"
       }
     },
     "https": {
@@ -16,7 +17,8 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:7272;http://localhost:5260",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DB_CONNECTION": "Server=localhost,1433;Database=BarberBookingDB;User Id=sa;Password=Admin@123xyz;TrustServerCertificate=True"
       }
     }
   }

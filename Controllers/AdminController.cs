@@ -73,35 +73,62 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateService(BarberService service, IFormFile? imageFile)
     {
-        ModelState.Remove("imageFile");
+        // Đồng bộ CategoryName từ CategoryId
+        var category = await _context.Categories.FindAsync(service.CategoryId);
+        if (category != null)
+        {
+            service.CategoryName = category.Name;
+        }
+
         if (ModelState.IsValid)
         {
             try
             {
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    var uploadsDir = Path.Combine(_env.WebRootPath, "images", "services");
-                    if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
+                    // Validate ảnh
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                    var extension = Path.GetExtension(imageFile.FileName).ToLower();
 
-                    var ext = Path.GetExtension(imageFile.FileName);
-                    var fileName = $"{Guid.NewGuid()}{ext}";
-                    var filePath = Path.Combine(uploadsDir, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    if (!allowedExtensions.Contains(extension))
                     {
-                        await imageFile.CopyToAsync(stream);
+                        ModelState.AddModelError("imageFile", "Chỉ chấp nhận định dạng .jpg, .jpeg, .png, .webp");
                     }
-                    service.ImageUrl = $"/images/services/{fileName}";
+                    else if (imageFile.Length > 2 * 1024 * 1024) // 2MB
+                    {
+                        ModelState.AddModelError("imageFile", "Dung lượng ảnh không được vượt quá 2MB");
+                    }
+                    else
+                    {
+                        var uploadsDir = Path.Combine(_env.WebRootPath, "images", "services");
+                        if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
+
+                        var fileName = $"{Guid.NewGuid()}{extension}";
+                        var filePath = Path.Combine(uploadsDir, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        service.ImageUrl = $"/images/services/{fileName}";
+                    }
                 }
 
-                _context.Add(service);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Thêm dịch vụ thành công!";
-                return RedirectToAction(nameof(Services));
+                if (ModelState.IsValid)
+                {
+                    if (string.IsNullOrEmpty(service.ImageUrl))
+                    {
+                        service.ImageUrl = "/images/default-service.png";
+                    }
+                    _context.Add(service);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Thêm dịch vụ thành công!";
+                    return RedirectToAction(nameof(Services));
+                }
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "Lỗi khi lưu ảnh: " + ex.Message);
+                ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
             }
         }
         ViewBag.Categories = await _context.Categories.ToListAsync();
@@ -123,32 +150,64 @@ public class AdminController : Controller
     {
         if (id != service.Id) return NotFound();
 
-        ModelState.Remove("imageFile");
+        // Đồng bộ CategoryName từ CategoryId
+        var category = await _context.Categories.FindAsync(service.CategoryId);
+        if (category != null)
+        {
+            service.CategoryName = category.Name;
+        }
+
         if (ModelState.IsValid)
         {
             try
             {
                 if (imageFile != null && imageFile.Length > 0)
                 {
-                    var uploadsDir = Path.Combine(_env.WebRootPath, "images", "services");
-                    Directory.CreateDirectory(uploadsDir);
-                    var ext = Path.GetExtension(imageFile.FileName);
-                    var fileName = $"{Guid.NewGuid()}{ext}";
-                    var filePath = Path.Combine(uploadsDir, fileName);
-                    using var stream = new FileStream(filePath, FileMode.Create);
-                    await imageFile.CopyToAsync(stream);
-                    service.ImageUrl = $"/images/services/{fileName}";
+                    // Validate ảnh
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+                    var extension = Path.GetExtension(imageFile.FileName).ToLower();
+
+                    if (!allowedExtensions.Contains(extension))
+                    {
+                        ModelState.AddModelError("imageFile", "Chỉ chấp nhận định dạng .jpg, .jpeg, .png, .webp");
+                    }
+                    else if (imageFile.Length > 2 * 1024 * 1024) // 2MB
+                    {
+                        ModelState.AddModelError("imageFile", "Dung lượng ảnh không được vượt quá 2MB");
+                    }
+                    else
+                    {
+                        var uploadsDir = Path.Combine(_env.WebRootPath, "images", "services");
+                        if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
+
+                        var fileName = $"{Guid.NewGuid()}{extension}";
+                        var filePath = Path.Combine(uploadsDir, fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await imageFile.CopyToAsync(stream);
+                        }
+                        service.ImageUrl = $"/images/services/{fileName}";
+                    }
                 }
-                _context.Update(service);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
+
+                if (ModelState.IsValid)
+                {
+                    _context.Update(service);
+                    await _context.SaveChangesAsync();
+                    TempData["SuccessMessage"] = "Cập nhật dịch vụ thành công!";
+                    return RedirectToAction(nameof(Services));
+                }
             }
             catch (DbUpdateConcurrencyException)
             {
                 if (!await _context.BarberServices.AnyAsync(e => e.Id == service.Id)) return NotFound();
                 else throw;
             }
-            return RedirectToAction(nameof(Services));
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Lỗi hệ thống: " + ex.Message);
+            }
         }
         ViewBag.Categories = await _context.Categories.ToListAsync();
         return View(service);

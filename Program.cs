@@ -14,8 +14,10 @@ builder.Services.AddRouting(options => options.LowercaseUrls = true);
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
-// Register DbContext with SQL Server
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Register DbContext — priority: Environment Variable (DB_CONNECTION) → appsettings.json
+var connectionString = Environment.GetEnvironmentVariable("DB_CONNECTION")
+    ?? builder.Configuration.GetConnectionString("DefaultConnection");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
