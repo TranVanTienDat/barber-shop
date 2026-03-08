@@ -110,6 +110,40 @@ dotnet watch run
 - **Reporting:** Export booking lists to Excel files.
 - **Responsive UI:** Modern admin panel utilizing DaisyUI and semantic colors.
 
+## 🔑 Tài Khoản Mặc Định
+
+Hệ thống tự động tạo tài khoản mặc định khi khởi động lần đầu:
+
+### Admin
+
+| Trường   | Giá trị                |
+| -------- | ---------------------- |
+| Username | `admin`                |
+| Password | `admin123`             |
+| Email    | `admin@barbershop.com` |
+| Role     | `Admin`                |
+
+> ⚠️ **Lưu ý**: Vui lòng đổi mật khẩu Admin sau khi bàn giao bằng cách cập nhật trực tiếp trong database hoặc bổ sung tính năng đổi mật khẩu.
+
+### Khách Hàng Mẫu (Seed Data)
+
+| Trường   | Giá trị                             |
+| -------- | ----------------------------------- |
+| Username | Số điện thoại (ví dụ: `0901234567`) |
+| Password | `Khang123@#`                        |
+| Role     | `Customer`                          |
+
+---
+
+## 📂 Tài Liệu
+
+| Tài liệu                                   | Mô tả                                    |
+| ------------------------------------------ | ---------------------------------------- |
+| [📦 Danh sách tính năng](spec/features.md) | Liệt kê toàn bộ tính năng đã implement   |
+| [📖 Hướng dẫn sử dụng](spec/user-guide.md) | Hướng dẫn sử dụng cho Khách hàng & Admin |
+
+---
+
 ## 🗄️ Database Schema
 
 ![Database Schema](docs/images/database.png)
